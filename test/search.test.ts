@@ -133,6 +133,60 @@ describe("hybridSearch", () => {
   });
 });
 
+describe("CJK search accuracy", () => {
+  const pages: WikiPage[] = [
+    makePage("ml-zh", "机器学习", "机器学习是人工智能的核心技术，包括监督学习和无监督学习。"),
+    makePage("dl-zh", "深度学习", "深度学习使用神经网络进行特征提取和模式识别。"),
+    makePage("nlp-zh", "自然语言处理", "自然语言处理利用机器学习理解人类语言。"),
+  ];
+
+  it("finds Chinese pages by Chinese query", () => {
+    const index = buildBM25Index(pages);
+    const results = searchBM25("机器学习", index);
+    expect(results.get("ml-zh")).toBeGreaterThan(0);
+    expect(results.get("ml-zh")!).toBeGreaterThan(results.get("dl-zh") || 0);
+  });
+
+  it("finds pages with partial CJK match", () => {
+    const index = buildBM25Index(pages);
+    const results = searchBM25("神经网络", index);
+    expect(results.get("dl-zh")).toBeGreaterThan(0);
+  });
+
+  it("hybrid search works with CJK", () => {
+    const index = buildBM25Index(pages);
+    const graph = buildGraph(pages, defaultConfig);
+    const results = hybridSearch("机器学习", pages, index, graph, defaultConfig);
+    expect(results.length).toBeGreaterThan(0);
+    expect(results[0].slug).toBe("ml-zh");
+  });
+});
+
+describe("search edge cases", () => {
+  it("handles empty query", () => {
+    const pages: WikiPage[] = [makePage("a", "A", "Content.")];
+    const index = buildBM25Index(pages);
+    const results = searchBM25("", index);
+    expect(results.size).toBe(0);
+  });
+
+  it("handles single page wiki", () => {
+    const pages: WikiPage[] = [makePage("only", "Only Page", "The only page.")];
+    const index = buildBM25Index(pages);
+    const graph = buildGraph(pages, defaultConfig);
+    const results = hybridSearch("only page", pages, index, graph, defaultConfig);
+    expect(results.length).toBe(1);
+    expect(results[0].slug).toBe("only");
+  });
+
+  it("handles empty wiki", () => {
+    const pages: WikiPage[] = [];
+    const index = buildBM25Index(pages);
+    const results = searchBM25("anything", index);
+    expect(results.size).toBe(0);
+  });
+});
+
 function makePage(
   slug: string,
   title: string,

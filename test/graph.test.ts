@@ -133,6 +133,49 @@ describe("generateInsights", () => {
   });
 });
 
+describe("graph performance", () => {
+  it("builds graph with 500 pages in < 5s", () => {
+    const pages: WikiPage[] = [];
+    for (let i = 0; i < 500; i++) {
+      // Each page links to 3 random other pages
+      const links = [];
+      for (let j = 0; j < 3; j++) {
+        const target = Math.floor(Math.random() * 500);
+        if (target !== i) links.push(`[[page-${target}]]`);
+      }
+      pages.push(
+        makePage(`page-${i}`, `Page ${i}`, links.join(" "), {
+          page_type: i % 3 === 0 ? "concept" : i % 3 === 1 ? "entity" : "topic",
+        })
+      );
+    }
+
+    const start = performance.now();
+    const graph = buildGraph(pages, defaultConfig);
+    const elapsed = performance.now() - start;
+
+    expect(graph.nodes.size).toBe(500);
+    expect(elapsed).toBeLessThan(5000);
+  });
+});
+
+describe("graph boundary cases", () => {
+  it("handles self-referencing page", () => {
+    const pages = [makePage("self", "Self", "Link to [[self]].")];
+    const graph = buildGraph(pages, defaultConfig);
+    // Self-links should be excluded
+    expect(graph.edges.size).toBe(0);
+  });
+
+  it("handles single page with no links", () => {
+    const pages = [makePage("alone", "Alone", "No links here.")];
+    const graph = buildGraph(pages, defaultConfig);
+    expect(graph.nodes.size).toBe(1);
+    expect(graph.edges.size).toBe(0);
+    expect(graph.nodes.get("alone")!.degree).toBe(0);
+  });
+});
+
 function makePage(
   slug: string,
   title: string,

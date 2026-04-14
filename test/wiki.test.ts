@@ -8,6 +8,7 @@ import {
   findOrphanPages,
   findDuplicateFilenames,
   findMissingFrontmatter,
+  findAmbiguousLinks,
   type WikiPage,
 } from "../src/lib/wiki.js";
 import { parseFrontmatter, serializeFrontmatter } from "../src/utils/frontmatter.js";
@@ -201,6 +202,65 @@ describe("contentHash", () => {
   it("produces 16-char hex string", () => {
     const hash = contentHash("test");
     expect(hash).toMatch(/^[0-9a-f]{16}$/);
+  });
+});
+
+// ─── Circular wikilinks ───────────────────────────────────────────
+
+describe("circular wikilinks", () => {
+  it("resolveWikilink handles circular references without infinite loop", () => {
+    const pages: WikiPage[] = [
+      makePage("a", "A", "Link to [[b]]."),
+      makePage("b", "B", "Link to [[c]]."),
+      makePage("c", "C", "Link to [[a]]."),
+    ];
+    // Should resolve each link without hanging
+    expect(resolveWikilink("a", pages)?.slug).toBe("a");
+    expect(resolveWikilink("b", pages)?.slug).toBe("b");
+    expect(resolveWikilink("c", pages)?.slug).toBe("c");
+  });
+
+  it("findBrokenLinks works with circular references", () => {
+    const pages: WikiPage[] = [
+      makePage("a", "A", "Link to [[b]]."),
+      makePage("b", "B", "Link to [[c]]."),
+      makePage("c", "C", "Link to [[a]]."),
+    ];
+    const broken = findBrokenLinks(pages);
+    expect(broken).toHaveLength(0);
+  });
+
+  it("findOrphanPages works with circular references", () => {
+    const pages: WikiPage[] = [
+      makePage("a", "A", "Link to [[b]]."),
+      makePage("b", "B", "Link to [[c]]."),
+      makePage("c", "C", "Link to [[a]]."),
+    ];
+    const orphans = findOrphanPages(pages);
+    expect(orphans).toHaveLength(0);
+  });
+});
+
+// ─── findDuplicateFilenames ───────────────────────────────────────
+
+describe("findDuplicateFilenames", () => {
+  it("detects duplicate basenames", () => {
+    const pages: WikiPage[] = [
+      makePage("concepts/ml", "ML Concept"),
+      makePage("topics/ml", "ML Topic"),
+    ];
+    const dupes = findDuplicateFilenames(pages);
+    expect(dupes.size).toBe(1);
+    expect(dupes.get("ml")!.length).toBe(2);
+  });
+
+  it("returns empty for unique names", () => {
+    const pages: WikiPage[] = [
+      makePage("a", "A"),
+      makePage("b", "B"),
+    ];
+    const dupes = findDuplicateFilenames(pages);
+    expect(dupes.size).toBe(0);
   });
 });
 
