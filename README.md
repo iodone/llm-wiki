@@ -20,12 +20,9 @@ npm install -g @jackwener/llm-wiki
 mkdir my-wiki && cd my-wiki
 llm-wiki init
 
-# Install skills for your AI agent
-# Claude Code:
-llm-wiki skill ingest > .claude/skills/ingest.md
-llm-wiki skill query > .claude/skills/query.md
-llm-wiki skill lint > .claude/skills/lint.md
-llm-wiki skill research > .claude/skills/research.md
+# Install all skills for your AI agent (one command)
+llm-wiki skill install              # Claude Code (default)
+llm-wiki skill install --agent codex # Codex
 
 # Now use your AI agent:
 #   /ingest sources/some-article.md
@@ -70,7 +67,9 @@ Four skills that AI agents use to operate the wiki:
 | `llm-wiki graph [--json]` | Analyze wikilink graph: communities, hubs, orphans, wanted pages |
 | `llm-wiki status` | Wiki statistics and health summary |
 | `llm-wiki sync [--dry-run]` | Track changes (mtime + SHA256), sync embeddings to DB9 |
-| `llm-wiki skill [name]` | List skills or print skill content for agent installation |
+| `llm-wiki skill install` | Install all skills to your AI agent workspace |
+| `llm-wiki skill list` | List available skills |
+| `llm-wiki skill show <name>` | Print skill content to stdout |
 
 ## Search
 
