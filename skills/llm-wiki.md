@@ -26,6 +26,7 @@ Process new source material into the wiki.
    - A directory goes to `sources/YYYY-MM-DD/<original-directory>/`
    - Preserve the original file or directory name whenever possible.
    - If a name already exists inside that date folder, rename with a version suffix.
+   - **Split large sources by topic or date** — do not store one monolithic file. For example, split chat logs by day (`chat-2026-04-17.md`, `chat-2026-04-18.md`) or by topic (`browser-timeout-discussion.md`). This enables granular incremental re-ingestion.
 7. Run `llm-wiki search` or scan `wiki/` to see existing wiki pages.
 8. Analyze the source content and decide:
    - Which new wiki pages to create
@@ -37,14 +38,17 @@ Process new source material into the wiki.
    ---
    title: Page Title
    description: One-line summary
-   aliases: [alternate names]
+   aliases: [alternate names, abbreviations, translations]
    tags: [domain-specific tags from schema.md]
    sources: [YYYY-MM-DD/source-filename.md]
+   status: open | resolved | wontfix  # required for issue/bug pages
    created: YYYY-MM-DD
    updated: YYYY-MM-DD
    ---
    ```
    - The `sources` field is **required**. List paths relative to `sources/`, without the `sources/` prefix.
+   - The `aliases` field should include common abbreviations, translations, and alternate names that people might use to refer to this topic (e.g., `Strategy` → `aliases: [Strategy, 认证策略]`). This improves search and wikilink matching.
+   - The `status` field is **required for issue/bug pages** (`open`, `resolved`, `wontfix`). Do not only write status in prose — put it in frontmatter for machine-readable queries.
    - When updating an existing page, **merge** new information. Do not overwrite unless contradicted by a more authoritative or recent source. If contradicted, note the conflict with both sources cited.
    - Use `[[wikilinks]]` generously — every entity mention that has (or should have) its own page gets a link.
    - Keep pages focused on a single topic. If a section grows too large, split into its own page.
@@ -147,7 +151,8 @@ Variants: `/lint <page>` — Lint a specific page. `/lint --fix` — Auto-fix sa
 #### Structural Issues
 - **Broken links**: `[[wikilinks]]` pointing to non-existent pages
 - **Orphan pages**: Pages with no incoming links from other pages
-- **Missing frontmatter**: Pages lacking required fields (title, description, tags, sources, updated)
+- **Missing frontmatter**: Pages lacking required fields (title, description, tags, sources, updated). Issue/bug pages must also have `status`.
+- **Missing aliases**: Pages with obvious alternate names but no `aliases` field
 - **Naming violations**: Page names that don't follow `schema.md` conventions
 - **Duplicate topics**: Multiple pages covering the same entity/concept (check `aliases`)
 
