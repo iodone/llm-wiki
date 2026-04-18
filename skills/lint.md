@@ -66,14 +66,27 @@ Health-check the wiki for issues.
 | Duplicate topics | Merge into one page, add alias for the other |
 | Shallow page | Expand from sources, or merge into related page |
 
-7. **Never auto-fix contradictions** — report for human review.
-8. Append to `log.md`:
+7. Write a machine-readable result file at `.llm-wiki/lint-result.yaml`:
+   ```yaml
+   date: YYYY-MM-DD
+   summary:
+     pages: N
+     sources: N
+     issues: {critical: X, warning: Y, info: Z}
+   issues:
+     - type: broken_link
+       severity: critical
+       page: wiki/page-a.md
+       detail: "links to [[nonexistent-page]]"
+   ```
+8. **Never auto-fix contradictions** — report for human review.
+9. Append to `log.md`:
    ```
    ## [YYYY-MM-DD] lint | Health Check
    - fixed `page-name` — fix description
    - flagged `page-name` — needs human review
    ```
-9. Run `llm-wiki sync` if any changes were made.
+10. Run `llm-wiki sync` if any changes were made.
 
 ## Guidelines
 

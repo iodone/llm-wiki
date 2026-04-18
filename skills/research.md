@@ -12,7 +12,7 @@ Deep-dive investigation that goes beyond existing wiki content.
 2. Read `schema.md` — understand page types and naming conventions.
 3. Run a **Query** first — understand what the wiki already knows. Identify knowledge gaps.
 4. Define a clear research question and scope. Avoid scope creep.
-5. Search for high-quality external sources. Prioritize:
+5. Search for high-quality external sources (limit to **5–10 sources** per research session to keep scope manageable). Prioritize:
    - Primary sources (official docs, papers, original announcements)
    - Authoritative secondary sources (well-known publications, expert blogs)
    - Recency — prefer recent sources for fast-moving topics
