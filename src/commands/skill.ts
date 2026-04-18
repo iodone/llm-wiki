@@ -17,12 +17,18 @@ function listSkills(skillsDir: string): string[] {
 export const skillCommand = new Command('skill')
   .description('Manage AI agent skills');
 
+function detectAgent(workspace: string): 'claude' | 'codex' {
+  if (existsSync(join(workspace, '.agents'))) return 'codex';
+  return 'claude'; // default
+}
+
 skillCommand
   .command('install')
   .description('Install all skills to your AI agent workspace (one command)')
-  .option('--agent <type>', 'agent type: claude or codex', 'claude')
+  .option('--claude', 'force install to .claude/skills/')
+  .option('--codex', 'force install to .agents/skills/')
   .option('--dir <path>', 'workspace directory (default: cwd)')
-  .action((opts: { agent: string; dir?: string }) => {
+  .action((opts: { claude?: boolean; codex?: boolean; dir?: string }) => {
     const skillsDir = getSkillsDir();
     if (!existsSync(skillsDir)) {
       console.error('Error: Skills directory not found. Package may be corrupted.');
@@ -30,7 +36,8 @@ skillCommand
     }
 
     const workspace = opts.dir || process.cwd();
-    const targetDir = opts.agent === 'codex'
+    const agent = opts.codex ? 'codex' : opts.claude ? 'claude' : detectAgent(workspace);
+    const targetDir = agent === 'codex'
       ? join(workspace, '.agents', 'skills')
       : join(workspace, '.claude', 'skills');
 
