@@ -17,16 +17,20 @@ function listSkills(skillsDir: string): string[] {
 export const skillCommand = new Command('skill')
   .description('Manage AI agent skills');
 
-function detectAgent(workspace: string): 'claude' | 'codex' {
-  if (existsSync(join(workspace, '.agents'))) return 'codex';
-  return 'claude'; // default
+function installToDir(skillsDir: string, targetDir: string): string[] {
+  mkdirSync(targetDir, { recursive: true });
+  const files = listSkills(skillsDir);
+  for (const file of files) {
+    copyFileSync(join(skillsDir, file), join(targetDir, file));
+  }
+  return files;
 }
 
 skillCommand
   .command('install')
   .description('Install all skills to your AI agent workspace (one command)')
-  .option('--claude', 'force install to .claude/skills/')
-  .option('--codex', 'force install to .agents/skills/')
+  .option('--claude', 'install to .claude/skills/ only')
+  .option('--codex', 'install to .agents/skills/ only')
   .option('--dir <path>', 'workspace directory (default: cwd)')
   .action((opts: { claude?: boolean; codex?: boolean; dir?: string }) => {
     const skillsDir = getSkillsDir();
@@ -36,21 +40,21 @@ skillCommand
     }
 
     const workspace = opts.dir || process.cwd();
-    const agent = opts.codex ? 'codex' : opts.claude ? 'claude' : detectAgent(workspace);
-    const targetDir = agent === 'codex'
-      ? join(workspace, '.agents', 'skills')
-      : join(workspace, '.claude', 'skills');
+    const both = !opts.claude && !opts.codex;
 
-    mkdirSync(targetDir, { recursive: true });
-
-    const files = listSkills(skillsDir);
-    for (const file of files) {
-      copyFileSync(join(skillsDir, file), join(targetDir, file));
+    if (both || opts.claude) {
+      const dir = join(workspace, '.claude', 'skills');
+      const files = installToDir(skillsDir, dir);
+      console.log(`Installed ${files.length} skills to ${dir}/`);
+      for (const file of files) console.log(`  ${file.replace('.md', '')}`);
     }
 
-    console.log(`Installed ${files.length} skills to ${targetDir}/`);
-    for (const file of files) {
-      console.log(`  ${file.replace('.md', '')}`);
+    if (both || opts.codex) {
+      const dir = join(workspace, '.agents', 'skills');
+      const files = installToDir(skillsDir, dir);
+      if (both) console.log('');
+      console.log(`Installed ${files.length} skills to ${dir}/`);
+      for (const file of files) console.log(`  ${file.replace('.md', '')}`);
     }
   });
 

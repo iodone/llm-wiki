@@ -21,8 +21,9 @@ mkdir my-wiki && cd my-wiki
 llm-wiki init
 
 # Install all skills for your AI agent (one command)
-llm-wiki skill install              # Claude Code (default)
-llm-wiki skill install --agent codex # Codex
+llm-wiki skill install              # Both Claude Code + Codex
+llm-wiki skill install --claude     # Claude Code only
+llm-wiki skill install --codex      # Codex only
 
 # Now use your AI agent:
 #   /ingest sources/some-article.md
