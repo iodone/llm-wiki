@@ -27,6 +27,18 @@ describe('init command', () => {
     expect(existsSync(join(testDir, '.llm-wiki/config.toml'))).toBe(true);
   });
 
+  it('should generate agent bootstrap files', () => {
+    execSync(`node ${CLI} init`, { cwd: testDir });
+    expect(existsSync(join(testDir, 'CLAUDE.md'))).toBe(true);
+    expect(existsSync(join(testDir, 'AGENTS.md'))).toBe(true);
+  });
+
+  it('should auto-install skills to both agent dirs', () => {
+    execSync(`node ${CLI} init`, { cwd: testDir });
+    expect(existsSync(join(testDir, '.claude/skills/llm-wiki.md'))).toBe(true);
+    expect(existsSync(join(testDir, '.agents/skills/llm-wiki.md'))).toBe(true);
+  });
+
   it('should not overwrite existing files', () => {
     execSync(`node ${CLI} init`, { cwd: testDir });
     // Should fail if already initialized
