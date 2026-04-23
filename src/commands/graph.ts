@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { requireVaultRoot, vaultPaths } from '../lib/config.js';
+import { requireVaultRoot, vaultPaths, loadConfig } from '../lib/config.js';
 import { loadWikiPages } from '../lib/wiki.js';
 import { analyzeGraph } from '../lib/graph.js';
 
@@ -8,7 +8,8 @@ export const graphCommand = new Command('graph')
   .option('--json', 'output as JSON')
   .action((opts: { json?: boolean }) => {
     const root = requireVaultRoot();
-    const paths = vaultPaths(root);
+    const config = loadConfig(root);
+    const paths = vaultPaths(root, config);
     const pages = loadWikiPages(paths.wiki);
 
     if (pages.length === 0) {

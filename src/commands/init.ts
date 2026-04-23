@@ -53,6 +53,7 @@ Define your tag taxonomy here as the wiki grows.
 const CONFIG_TEMPLATE = `[vault]
 name = "My Wiki"
 language = "en"
+# source_dir = "sources"  # Optional: customize input directory (default: "sources")
 
 # [db9]
 # url = "your-db9-connection-string"

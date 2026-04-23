@@ -11,8 +11,8 @@ export const searchCommand = new Command('search')
   .option('--bm25-only', 'force BM25-only search even if DB9 is configured')
   .action(async (query: string, opts: { limit: string; bm25Only?: boolean }) => {
     const root = requireVaultRoot();
-    const paths = vaultPaths(root);
     const config = loadConfig(root);
+    const paths = vaultPaths(root, config);
     const pages = loadWikiPages(paths.wiki);
 
     if (pages.length === 0) {

@@ -9,8 +9,8 @@ export const statusCommand = new Command('status')
   .description('Show wiki statistics and health summary')
   .action(() => {
     const root = requireVaultRoot();
-    const paths = vaultPaths(root);
     const config = loadConfig(root);
+    const paths = vaultPaths(root, config);
 
     // Count pages
     const pages = loadWikiPages(paths.wiki);

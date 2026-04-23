@@ -11,8 +11,8 @@ export const syncCommand = new Command('sync')
   .option('--dry-run', 'show changes without updating state')
   .action(async (opts: { dryRun?: boolean }) => {
     const root = requireVaultRoot();
-    const paths = vaultPaths(root);
     const config = loadConfig(root);
+    const paths = vaultPaths(root, config);
 
     // Ensure .llm-wiki directory exists
     mkdirSync(dirname(paths.syncState), { recursive: true });

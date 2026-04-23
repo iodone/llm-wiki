@@ -6,6 +6,7 @@ export interface WikiConfig {
   vault: {
     name: string;
     language: string;
+    source_dir?: string;  // Optional: defaults to 'sources', can be customized (e.g., 'raw')
   };
   db9?: {
     url: string;
@@ -49,10 +50,11 @@ export function loadConfig(vaultRoot: string): WikiConfig {
   return { ...DEFAULT_CONFIG, ...TOML.parse(raw) } as WikiConfig;
 }
 
-export function vaultPaths(root: string) {
+export function vaultPaths(root: string, config?: WikiConfig) {
+  const sourceDir = config?.vault?.source_dir || 'sources';
   return {
     wiki: join(root, 'wiki'),
-    sources: join(root, 'sources'),
+    sources: join(root, sourceDir),
     purpose: join(root, 'wiki-purpose.md'),
     schema: join(root, 'wiki-schema.md'),
     agent: join(root, 'wiki-agent.md'),
