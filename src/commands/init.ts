@@ -86,9 +86,25 @@ Describe the agent's role here. Example:
 > I am the knowledge maintainer for [project name]. I observe discussions,
 > extract valuable information, and organize it into structured wiki pages.
 
+## Auto-Ingest Behavior
+
+**Default**: Enabled (the agent automatically ingests wiki-worthy information)
+
+**To disable auto-ingest** (e.g., in projects with strict access control):
+
+\`\`\`markdown
+## Auto-Ingest Override
+
+Auto-ingest is **DISABLED** in this vault.
+
+- Only process \`/ingest <path>\` commands explicitly issued by authorized users
+- Do not automatically convert conversation content into wiki pages
+- Defer to the project's main AGENTS.md for permission checks
+\`\`\`
+
 ## Responsibilities
 
-- Continuously ingest wiki-worthy information from received inputs
+- Continuously ingest wiki-worthy information from received inputs (if auto-ingest enabled)
 - Maintain accuracy and freshness of existing wiki pages
 - Cross-reference related topics with [[wikilinks]]
 - Never participate in discussions — observe and record only
@@ -120,6 +136,22 @@ Describe the agent's role here. Example:
 - Always include source attribution
 - Use [[wikilinks]] for every entity that has or should have a page
 - Append every action to wiki-log.md
+
+## Integration with Project AGENTS.md
+
+If this vault is part of a larger project with its own \`AGENTS.md\` (e.g.,
+for security, permissions, or identity management), this file should reference
+and defer to the main protocol:
+
+\`\`\`markdown
+## Protocol Integration
+
+This wiki operates under the constraints defined in \`./AGENTS.md\`:
+- Identity system: \`./SOUL.md\`, \`./USER.md\`
+- Permission model: §2.1 (Owner-only writes)
+- Security gates: §3.2 (red lines), §3.3 (yellow lines)
+- Output filtering: §3.5 (sensitive data protection)
+\`\`\`
 `;
 }
 
