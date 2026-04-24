@@ -6,7 +6,9 @@ export interface WikiConfig {
   vault: {
     name: string;
     language: string;
-    source_dir?: string;  // Optional: defaults to 'sources', can be customized (e.g., 'raw')
+    source_dir?: string;     // Optional: defaults to 'sources', can be customized (e.g., 'raw')
+    wiki_dir?: string;       // Optional: defaults to 'wiki', can be customized if vault is nested
+    pages_subdir?: string;   // Optional: defaults to '' (flat), can be 'pages' for wiki/pages/ structure
   };
   db9?: {
     url: string;
@@ -52,13 +54,20 @@ export function loadConfig(vaultRoot: string): WikiConfig {
 
 export function vaultPaths(root: string, config?: WikiConfig) {
   const sourceDir = config?.vault?.source_dir || 'sources';
+  const wikiDir = config?.vault?.wiki_dir || 'wiki';
+  const pagesSubdir = config?.vault?.pages_subdir || 'pages';
+  
+  const wikiRoot = join(root, wikiDir);
+  const wikiPages = pagesSubdir ? join(wikiRoot, pagesSubdir) : wikiRoot;
+  
   return {
-    wiki: join(root, 'wiki'),
+    wiki: wikiPages,                            // wiki/pages/ (or wiki/ if pages_subdir is empty)
+    wikiRoot: wikiRoot,                         // wiki/
     sources: join(root, sourceDir),
-    purpose: join(root, 'wiki-purpose.md'),
-    schema: join(root, 'wiki-schema.md'),
-    agent: join(root, 'wiki-agent.md'),
-    log: join(root, 'wiki-log.md'),
+    purpose: join(wikiRoot, 'wiki-purpose.md'), // wiki/wiki-purpose.md
+    schema: join(wikiRoot, 'wiki-schema.md'),   // wiki/wiki-schema.md
+    agent: join(wikiRoot, 'wiki-agent.md'),     // wiki/wiki-agent.md
+    log: join(wikiRoot, 'wiki-log.md'),         // wiki/wiki-log.md
     claudeMd: join(root, 'CLAUDE.md'),
     agentsMd: join(root, 'AGENTS.md'),
     claudeSkillsDir: join(root, '.claude', 'skills'),

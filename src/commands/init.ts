@@ -54,6 +54,8 @@ const CONFIG_TEMPLATE = `[vault]
 name = "My Wiki"
 language = "en"
 # source_dir = "sources"  # Optional: customize input directory (default: "sources")
+# wiki_dir = "wiki"       # Optional: customize wiki root directory (default: "wiki")
+# pages_subdir = "pages"  # Optional: store wiki pages in wiki/pages/ (default: "pages")
 
 # [db9]
 # url = "your-db9-connection-string"
@@ -196,10 +198,10 @@ detailed behavioral rules specific to this vault.
 
 ## Layout
 
-- \`wiki/\` — AI-maintained wiki pages (Obsidian-compatible)
-- \`wiki-agent.md\` — Agent behavioral rules (optional, vault-specific)
+- \`wiki/pages/\` — Wiki pages (Obsidian-compatible)
+- \`wiki/wiki-purpose.md\` — Purpose and scope\n- \`wiki/wiki-schema.md\` — Page conventions\n- \`wiki/wiki-agent.md\` — Agent behavioral rules (optional, vault-specific)
 - \`sources/\` — Raw source documents, date-partitioned (immutable)
-- \`wiki-log.md\` — Append-only operation log
+- \`wiki/wiki-log.md\` — Append-only operation log
 - \`.llm-wiki/\` — Config and sync state
 
 ## CLI
@@ -293,10 +295,20 @@ export const initCommand = new Command('init')
       process.exit(1);
     }
 
-    const paths = vaultPaths(targetDir);
+    // Load default config for path calculation
+    const defaultConfig: WikiConfig = {
+      vault: {
+        name: 'My Wiki',
+        language: 'en',
+        wiki_dir: 'wiki',
+        pages_subdir: 'pages',
+      },
+    };
+    const paths = vaultPaths(targetDir, defaultConfig);
 
     // Create directories
-    mkdirSync(paths.wiki, { recursive: true });
+    mkdirSync(paths.wiki, { recursive: true });        // wiki/pages/
+    mkdirSync(paths.wikiRoot, { recursive: true });    // wiki/
     mkdirSync(paths.sources, { recursive: true });
     mkdirSync(paths.llmWikiDir, { recursive: true });
 
@@ -333,12 +345,13 @@ export const initCommand = new Command('init')
     console.log(`Initialized llm-wiki vault in ${targetDir}`);
     console.log('');
     console.log('Created:');
-    console.log('  wiki/            — AI-maintained wiki pages');
-    console.log('  sources/         — Raw source documents');
-    console.log('  wiki-purpose.md  — Wiki purpose and scope');
-    console.log('  wiki-schema.md   — Page conventions and structure');
-    console.log('  wiki-agent.md    — Agent identity and ingest rules');
-    console.log('  wiki-log.md      — Change log');
+    console.log('  wiki/pages/      — Wiki pages (Crystal layer)');
+    console.log('  wiki/            — Wiki meta files');
+    console.log('    wiki-purpose.md  — Purpose and scope');
+    console.log('    wiki-schema.md   — Naming conventions and structure');
+    console.log('    wiki-agent.md    — Agent identity and ingest rules');
+    console.log('    wiki-log.md      — Change log');
+    console.log('  sources/         — Raw source documents (immutable)');
     console.log('  CLAUDE.md        — Agent bootstrap (Claude Code)');
     console.log('  AGENTS.md        — Agent bootstrap (Codex)');
     console.log('  .llm-wiki/       — Config and state');
@@ -346,8 +359,8 @@ export const initCommand = new Command('init')
     console.log(`  .agents/skills/  — ${skillSummary(agentsSkills)}`);
     console.log('');
     console.log('Next steps:');
-    console.log('  1. Edit wiki-purpose.md to define your wiki\'s scope');
-    console.log('  2. Edit wiki-schema.md to set naming conventions');
+    console.log('  1. Edit wiki/wiki-purpose.md to define your wiki\'s scope');
+    console.log('  2. Edit wiki/wiki-schema.md to set naming conventions');
     console.log('  3. Use your AI agent with /ingest to start building the wiki');
     console.log('');
     console.log('To upgrade skills later: `llm-wiki skill install`');
