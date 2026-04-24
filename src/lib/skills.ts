@@ -27,13 +27,22 @@ export function installSkillsTo(targetDir: string, overwrite = true): InstallRes
   const installed: string[] = [];
   const skipped: string[] = [];
   for (const file of files) {
-    const dest = join(targetDir, file);
+    // Extract skill name (e.g., "llm-wiki.md" -> "llm-wiki")
+    const skillName = file.replace(/\.md$/, '');
+    
+    // Create skill directory: .agents/skills/llm-wiki/
+    const skillDir = join(targetDir, skillName);
+    mkdirSync(skillDir, { recursive: true });
+    
+    // Destination: .agents/skills/llm-wiki/SKILL.md
+    const dest = join(skillDir, 'SKILL.md');
+    
     if (!overwrite && existsSync(dest)) {
-      skipped.push(file);
+      skipped.push(skillName);
       continue;
     }
     copyFileSync(join(skillsDir, file), dest);
-    installed.push(file);
+    installed.push(skillName);
   }
   return { installed, skipped };
 }

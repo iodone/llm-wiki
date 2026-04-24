@@ -20,7 +20,7 @@ skillCommand
       const dir = join(workspace, '.claude', 'skills');
       const { installed } = installSkillsTo(dir);
       console.log(`Installed ${installed.length} skill${installed.length === 1 ? '' : 's'} to ${dir}/`);
-      for (const file of installed) console.log(`  ${file.replace('.md', '')}`);
+      for (const name of installed) console.log(`  ${name}/SKILL.md`);
     }
 
     if (both || opts.codex) {
@@ -28,7 +28,7 @@ skillCommand
       const { installed } = installSkillsTo(dir);
       if (both) console.log('');
       console.log(`Installed ${installed.length} skill${installed.length === 1 ? '' : 's'} to ${dir}/`);
-      for (const file of installed) console.log(`  ${file.replace('.md', '')}`);
+      for (const name of installed) console.log(`  ${name}/SKILL.md`);
     }
   });
 
