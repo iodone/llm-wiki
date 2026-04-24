@@ -16,7 +16,38 @@ LLM Wiki is a **CLI tool + AI Agent skill system** that maintains an evolving, i
 
 ## Installation
 
-### Option 1: npm (Global Install)
+### Option 1: Development Install (Recommended for Forked Repos)
+
+If you've forked this repo and want to develop/customize it:
+
+```bash
+# Clone your fork
+git clone https://github.com/<your-username>/llm-wiki.git
+cd llm-wiki
+
+# Install dependencies and build
+npm install
+npm run build
+
+# Create global symlink (makes llm-wiki available everywhere)
+npm link
+
+# Verify installation
+llm-wiki --version
+```
+
+**Benefits:**
+- ✅ `llm-wiki` command available globally
+- ✅ Changes take effect immediately after `npm run build`
+- ✅ Perfect for iterative development
+- ✅ No need to reinstall after modifications
+
+**To uninstall:**
+```bash
+npm unlink
+```
+
+### Option 2: npm (Global Install from Registry)
 
 ```bash
 npm install -g @jackwener/llm-wiki
@@ -24,27 +55,23 @@ npm install -g @jackwener/llm-wiki
 
 After installation, `llm-wiki` will be available in your PATH.
 
-### Option 2: Direct Execution (No Install)
+**Note:** This installs the published package. Use Option 1 if you've forked the repo.
 
-Clone the repo and build:
+### Option 3: Direct Execution (No Global Install)
+
+Clone the repo and run directly:
 
 ```bash
 git clone https://github.com/iodone/llm-wiki.git
 cd llm-wiki
 npm install
 npm run build
-```
 
-Then run directly:
-
-```bash
+# Run with relative path
 ./dist/cli.js init my-wiki
 ./dist/cli.js status
-```
 
-Or symlink to your PATH:
-
-```bash
+# Or create manual symlink
 ln -s $(pwd)/dist/cli.js /usr/local/bin/llm-wiki
 ```
 
