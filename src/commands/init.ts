@@ -58,80 +58,68 @@ Format: \`YYYY-MM-DD HH:MM | operation | details\`
 `;
 
 function agentTemplate() {
-  return `---
-title: Wiki Agent
----
+  return `# LLM Wiki
 
-# Identity
+This vault uses **llm-wiki** for knowledge management.
 
-I am the Wiki Agent for this vault. My role is to:
-- Maintain a clean, up-to-date knowledge base in \`wiki/pages/\`
-- Process source documents from \`sources/\` and distill them into wiki pages
-- Follow the conventions in \`wiki-schema.md\`
-- Respect the scope defined in \`wiki-purpose.md\`
+## Your Role
 
-## Behavior Overrides
+You are the wiki agent. When you receive information:
+1. Evaluate if it is wiki-worthy (see criteria below)
+2. If wiki-worthy: update or create wiki pages using workflows below
+3. If not wiki-worthy: ignore silently
 
-If this vault is embedded in a larger project with its own \`AGENTS.md\` or protocol files, those take precedence. This file defines wiki-specific behavior only.
+### Default Behavior
 
-# Ingest Workflow
+- You maintain this wiki by ingesting information from sources you receive
+- When you receive new information, evaluate whether it is wiki-worthy
+- If wiki-worthy: update or create wiki pages using the /ingest workflow
+- If not wiki-worthy: ignore silently
+- You do not need explicit \`/ingest\` commands to act — any information input
+  that matches your ingest criteria should be processed automatically
 
-When you run \`/ingest\`:
+### Auto-Ingest Criteria
 
-1. **Read** \`wiki-purpose.md\` and \`wiki-schema.md\`
-2. **Analyze** the input (file, snippet, or conversation)
-3. **Decide** if it belongs in the wiki based on criteria below
-4. **Extract** key concepts, entities, and relationships
-5. **Create or update** wiki pages in \`wiki/pages/\` using [[wikilinks]]
-6. **Log** the operation in \`wiki-log.md\`
-7. **Run** \`llm-wiki sync\` to update search index
-
-# Ingest Criteria
-
-## MUST capture
-
-- Decisions (who, what, when, why)
-- Technical architecture and design
+**MUST capture:**
+- Decisions (who decided what, when, why)
+- Technical architecture and design discussions with conclusions
 - Task/issue status changes
-- Bug reports and resolutions
-- New concepts, systems, or processes
+- Bug reports and their resolutions
+- New concepts, systems, or processes introduced
 
-## MAY capture (use judgment)
-
+**MAY capture (use judgment):**
 - Ideas and proposals not yet confirmed
 - Tool and workflow discussions
 
-## NEVER capture
-
+**NEVER capture:**
 - Casual chat, greetings, emoji-only messages
 - Credentials, tokens, personal information
 - Duplicate information already in the wiki
 
-# Workflows
+## Layout
 
-## /ingest <source>
+- \`wiki/pages/\` — AI-maintained wiki pages (Obsidian-compatible)
+- \`wiki/wiki-agent.md\` — This file (agent behavioral rules)
+- \`wiki/wiki-purpose.md\` — Vault purpose and scope
+- \`wiki/wiki-schema.md\` — Page naming conventions
+- \`wiki/wiki-log.md\` — Append-only operation log
+- \`sources/\` — Raw source documents, date-partitioned (immutable)
+- \`.llm-wiki/\` — Config and sync state
 
-Ingest a file, snippet, or conversation into the wiki.
+## CLI
 
-## /query <question>
+- \`llm-wiki search <query>\` — BM25 (+ vector, if DB9 configured) keyword search
+- \`llm-wiki graph\` — communities, hubs, orphans, wanted pages
+- \`llm-wiki status\` — stats + health summary
+- \`llm-wiki sync\` — track mtime/SHA256, push embeddings to DB9 if configured
 
-Search the wiki (BM25 + optional vector search if DB9 configured).
+## Rules
 
-## /lint
-
-Check for broken links, orphaned pages, and outdated content.
-
-## /research <topic>
-
-Deep-dive research mode: gather context, synthesize, and create a comprehensive wiki entry.
-
-# Output Rules
-
-- Use [[wikilinks]] for cross-references
-- Keep pages focused (one concept per page)
-- Use tags for taxonomy
-- Link to \`sources/\` files for provenance
-- Update \`wiki-log.md\` after every change
+1. Always read \`wiki-purpose.md\` and \`wiki-schema.md\` before any operation
+2. Never modify files in \`sources/\` — they are immutable raw inputs
+3. Use \`[[wikilinks]]\` for cross-references between wiki pages
+4. After every operation, append an entry to \`wiki-log.md\` **and** run \`llm-wiki sync\`
+5. When you receive information, apply your auto-ingest criteria — do not wait for explicit commands
 `;
 }
 
