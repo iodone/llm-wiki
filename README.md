@@ -16,13 +16,13 @@ LLM Wiki is a **CLI tool + AI Agent skill system** that maintains an evolving, i
 
 ## Installation
 
-### Option 1: Development Install (Recommended for Forked Repos)
+### Development Install (Recommended for Forked Repos)
 
 If you've forked this repo and want to develop/customize it:
 
 ```bash
 # Clone your fork
-git clone https://github.com/<your-username>/llm-wiki.git
+git clone https://github.com/iodone/llm-wiki.git
 cd llm-wiki
 
 # Install dependencies and build
@@ -45,34 +45,6 @@ llm-wiki --version
 **To uninstall:**
 ```bash
 npm unlink
-```
-
-### Option 2: npm (Global Install from Registry)
-
-```bash
-npm install -g @jackwener/llm-wiki
-```
-
-After installation, `llm-wiki` will be available in your PATH.
-
-**Note:** This installs the published package. Use Option 1 if you've forked the repo.
-
-### Option 3: Direct Execution (No Global Install)
-
-Clone the repo and run directly:
-
-```bash
-git clone https://github.com/iodone/llm-wiki.git
-cd llm-wiki
-npm install
-npm run build
-
-# Run with relative path
-./dist/cli.js init my-wiki
-./dist/cli.js status
-
-# Or create manual symlink
-ln -s $(pwd)/dist/cli.js /usr/local/bin/llm-wiki
 ```
 
 ---
@@ -137,7 +109,6 @@ my-wiki/
 │   ├── wiki-agent.md              # Agent behavioral rules (customizable)
 │   └── wiki-log.md                # Append-only operation log
 ├── sources/                       # Raw, immutable source documents
-│   └── YYYY-MM-DD/                # Date-based storage (optional)
 ├── .llm-wiki/
 │   ├── config.toml                # Vault configuration
 │   └── sync-state.json            # Incremental sync tracking (auto-generated)
@@ -175,14 +146,14 @@ my-wiki/
 
 ### Customize Source Directory
 
-If your project uses `raw/` instead of `sources/`:
+The default input directory is `sources/`. To customize:
 
 ```toml
 # .llm-wiki/config.toml
 [vault]
 name = "My Wiki"
 language = "zh"
-source_dir = "raw"         # Use raw/ instead of sources/
+source_dir = "sources"     # Default, change if needed
 wiki_dir = "wiki"
 pages_subdir = "pages"
 ```
@@ -325,19 +296,20 @@ The `system-weaver` project uses llm-wiki with this structure:
 
 ```
 system-weaver/
-├── AGENTS.md                      # Project protocol (references wiki/wiki-agent.md)
-├── wiki/                          # Wiki vault
+├── wiki/                          # Wiki vault (self-contained)
 │   ├── pages/                     # Crystal layer (structured knowledge)
 │   ├── wiki-agent.md              # Wiki-specific behavior (Identity: Alma for Meta42)
 │   ├── wiki-purpose.md
 │   ├── wiki-schema.md
 │   └── wiki-log.md
-├── raw/                           # Input layer
+├── sources/                       # Input layer (immutable)
 │   ├── log/                       # Trace layer (raw conversations)
 │   ├── clippings/                 # External materials
 │   └── research/                  # Unit layer (deep analysis)
 ├── .llm-wiki/
-│   └── config.toml                # source_dir = "raw", wiki_dir = "wiki"
+│   └── config.toml                # wiki_dir = "wiki", pages_subdir = "pages"
+├── projects/                      # External project symlinks
+│   └── llm-wiki -> ...            # Symlink to llm-wiki project
 └── .agents/
     └── skills/
         └── llm-wiki/
@@ -345,8 +317,8 @@ system-weaver/
 ```
 
 **Three-layer memory model:**
-- **Trace** (`raw/log/`) — Raw conversations, preserve all facts
-- **Unit** (`raw/research/`) — Deep analysis, reusable insights
+- **Trace** (`sources/log/`) — Raw conversations, preserve all facts
+- **Unit** (`sources/research/`) — Deep analysis, reusable insights
 - **Crystal** (`wiki/pages/`) — Structured knowledge graph, LLM-maintained
 
 **Four-stage reasoning loop:**
@@ -370,7 +342,7 @@ LLM Wiki follows the principle: **structure first, content later**.
 ### Tool Generates, Protocols Reference
 
 - **llm-wiki** generates the wiki vault structure (wiki/, sources/, .llm-wiki/).
-- **Projects** (like system-weaver) reference the wiki via `AGENTS.md → wiki/wiki-agent.md`.
+- **Projects** (like system-weaver) reference the wiki via `wiki/wiki-agent.md` (single source of truth).
 - **Skills** are installed separately via `llm-wiki skill install`, not bundled with `init`.
 
 ### Low-Entropy Design
@@ -378,7 +350,7 @@ LLM Wiki follows the principle: **structure first, content later**.
 - Wiki vault is **self-contained** in `wiki/` (can be opened in Obsidian directly).
 - Source documents are **immutable** (append-only, never edited).
 - All edits happen in `wiki/pages/`, tracked in `wiki-log.md`.
-- Real-time topology consistency via index files (`wiki/index.md`, `raw/*/index.md`).
+- Real-time topology consistency via index files (`wiki/index.md`, `sources/*/index.md`).
 
 ---
 
@@ -404,7 +376,7 @@ Edit `wiki/wiki-schema.md` to define your frontmatter conventions:
 title: Page Title
 description: One-line summary
 tags: [concept, architecture]
-sources: [raw/research/2024-12-01-design-doc.md]
+sources: [sources/research/2024-12-01-design-doc.md]
 created: 2024-12-01
 updated: 2024-12-05
 ---
