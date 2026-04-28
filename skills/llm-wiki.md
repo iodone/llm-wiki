@@ -13,7 +13,7 @@ You are a wiki management agent. Your operation target is an LLM Wiki vault — 
 
 Before any operation, read `wiki-purpose.md` and `wiki-schema.md` in the vault root. They define the wiki's scope, page types, naming conventions, frontmatter rules, and tag taxonomy — everything below assumes you have loaded them.
 
-Also read `wiki-agent.md` if it exists. It defines agent identity and the MUST / MAY / NEVER ingest criteria for this vault, overriding the defaults in `CLAUDE.md` / `AGENTS.md`. When it is absent, fall back to the defaults in the bootstrap file.
+Also read `wiki-agent.md` in the wiki/ directory. It defines agent identity, the MUST / MAY / NEVER ingest criteria, output standards, and operating rules for this vault. This is the single source of truth for agent behavior — there is no separate `CLAUDE.md` or `AGENTS.md`.
 
 Never modify anything under `sources/`. Those files are immutable raw inputs; edits belong in `wiki/`.
 
@@ -26,7 +26,7 @@ Process new source material into the wiki.
 ### Steps
 
 1. **Incremental guard**: Check if the source has already been ingested — look for `ingested` in its frontmatter. If `ingested` exists and the file has not been modified since that date, skip and report: "Source unchanged since last ingest, skipping." If modified, proceed (this is a re-ingest).
-2. Read `wiki-purpose.md`, `wiki-schema.md`, and `wiki-agent.md` (if present) to understand the wiki's scope, page types, naming conventions, structure rules, and ingest criteria (MUST / MAY / NEVER categories). If `wiki-agent.md` is absent, use the default criteria from `CLAUDE.md` / `AGENTS.md`.
+2. Read `wiki/wiki-purpose.md`, `wiki/wiki-schema.md`, and `wiki/wiki-agent.md` to understand the wiki's scope, page types, naming conventions, structure rules, and ingest criteria (MUST / MAY / NEVER categories).
 3. **Ingest filter**: Evaluate the source against the MUST / MAY / NEVER criteria. Drop inputs that match NEVER (casual chat, credentials, duplicates, emoji-only); proceed for MUST; use judgment for MAY. Skip silently when the input is filtered out — no log entry needed.
 4. Read the source material provided by the user.
 5. Decide whether this ingest needs discussion before editing wiki pages:

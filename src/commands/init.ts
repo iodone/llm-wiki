@@ -27,7 +27,7 @@ Define the types of pages in this wiki and their conventions.
 ## Naming Convention
 
 - Use kebab-case for page filenames (e.g., \`distributed-consensus.md\`)
-- Use subdirectories for categories if needed (e.g., \`wiki/papers/raft.md\`)
+- Use subdirectories for categories if needed (e.g., \`wiki/pages/papers/raft.md\`)
 
 ## Required Frontmatter
 
@@ -73,8 +73,8 @@ title: Wiki Agent
 
 # Wiki Agent
 
-This page defines who the wiki agent is and how it behaves. The agent reads
-this on startup (via CLAUDE.md/AGENTS.md) to understand its role.
+This page defines the agent's role, behavior, and operating rules for this wiki vault.
+The AI agent reads this file (via the llm-wiki skill) on every wiki operation.
 
 ## Identity
 
@@ -117,132 +117,34 @@ Describe the agent's role here. Example:
 - Always include source attribution
 - Use [[wikilinks]] for every entity that has or should have a page
 - Append every action to wiki-log.md
+- After every operation, run \`llm-wiki sync\`
+
+## Layout
+
+- \`wiki/pages/\` — AI-maintained wiki pages (Obsidian-compatible)
+- \`wiki/wiki-agent.md\` — This file (agent behavioral rules)
+- \`wiki/wiki-purpose.md\` — Purpose and scope
+- \`wiki/wiki-schema.md\` — Page naming conventions
+- \`wiki/wiki-log.md\` — Append-only operation log
+- \`sources/\` — Raw source documents, date-partitioned (immutable)
+- \`.llm-wiki/\` — Config and sync state
+
+## CLI
+
+- \`llm-wiki search <query>\` — BM25 (+ vector, if DB9 configured) keyword search
+- \`llm-wiki graph\` — communities, hubs, orphans, wanted pages
+- \`llm-wiki status\` — stats + health summary
+- \`llm-wiki sync\` — track mtime/SHA256, push embeddings to DB9 if configured
+
+## Rules
+
+1. Always read \`wiki/wiki-purpose.md\` and \`wiki/wiki-schema.md\` before any operation
+2. Never modify files in \`sources/\` — they are immutable raw inputs
+3. Use \`[[wikilinks]]\` for cross-references between wiki pages
+4. After every operation, append an entry to \`wiki/wiki-log.md\` **and** run \`llm-wiki sync\`
+5. When you receive information, apply your auto-ingest criteria — do not wait for explicit commands
 `;
 }
-
-const CLAUDE_MD_TEMPLATE = `# LLM Wiki
-
-This vault uses **llm-wiki** for knowledge management.
-
-## Your Role
-
-You are the wiki agent. When you receive information:
-1. Evaluate if it is wiki-worthy (see wiki-agent.md)
-2. If yes: use the \`/ingest\` workflow to update the wiki
-3. If no: ignore silently
-
-### Default Behavior (when wiki-agent.md is absent)
-
-- You maintain this wiki by ingesting information from sources you receive
-- When you receive new information, evaluate whether it is wiki-worthy
-- If wiki-worthy: update or create wiki pages using the /ingest workflow
-- If not wiki-worthy: ignore silently
-- You do not need explicit \`/ingest\` commands to act — any information input
-  that matches your ingest criteria should be processed automatically
-
-### Auto-Ingest Criteria (defaults, override in wiki-agent.md)
-
-**MUST capture:**
-- Decisions (who decided what, when, why)
-- Technical architecture and design discussions with conclusions
-- Task/issue status changes
-- Bug reports and their resolutions
-- New concepts, systems, or processes introduced
-
-**MAY capture (use judgment):**
-- Ideas and proposals not yet confirmed
-- Tool and workflow discussions
-
-**NEVER capture:**
-- Casual chat, greetings, emoji-only messages
-- Credentials, tokens, personal information
-- Duplicate information already in the wiki
-
-## Layout
-
-- \`wiki/\` — AI-maintained wiki pages (Obsidian-compatible)
-- \`wiki-agent.md\` — Agent behavioral rules (optional, vault-specific)
-- \`sources/\` — Raw source documents, date-partitioned (immutable)
-- \`wiki-log.md\` — Append-only operation log
-- \`.llm-wiki/\` — Config and sync state
-
-## CLI
-
-- \`llm-wiki search <query>\` — BM25 (+ vector, if DB9 configured) keyword search
-- \`llm-wiki graph\` — communities, hubs, orphans, wanted pages
-- \`llm-wiki status\` — stats + health summary
-- \`llm-wiki sync\` — track mtime/SHA256, push embeddings to DB9 if configured
-
-## Rules
-
-1. Always read \`wiki-purpose.md\` and \`wiki-schema.md\` before any operation
-2. Never modify files in \`sources/\` — they are immutable raw inputs
-3. Use \`[[wikilinks]]\` for cross-references between wiki pages
-4. After every operation, append an entry to \`wiki-log.md\` **and** run \`llm-wiki sync\`
-5. When you receive information, apply your auto-ingest criteria — do not wait for explicit commands
-`;
-
-const AGENTS_MD_TEMPLATE = `# LLM Wiki
-
-This vault uses **llm-wiki** for knowledge management.
-
-## Your Role
-
-You are the wiki agent. When you receive information:
-1. Evaluate if it is wiki-worthy (see wiki-agent.md)
-2. If yes: update or create wiki pages using the /ingest workflow
-3. If no: ignore silently
-
-### Default Behavior (when wiki-agent.md is absent)
-
-- You maintain this wiki by ingesting information from sources you receive
-- When you receive new information, evaluate whether it is wiki-worthy
-- If wiki-worthy: update or create wiki pages using the /ingest workflow
-- If not wiki-worthy: ignore silently
-- You do not need explicit \`/ingest\` commands to act — any information input
-  that matches your ingest criteria should be processed automatically
-
-### Auto-Ingest Criteria (defaults, override in wiki-agent.md)
-
-**MUST capture:**
-- Decisions (who decided what, when, why)
-- Technical architecture and design discussions with conclusions
-- Task/issue status changes
-- Bug reports and their resolutions
-- New concepts, systems, or processes introduced
-
-**MAY capture (use judgment):**
-- Ideas and proposals not yet confirmed
-- Tool and workflow discussions
-
-**NEVER capture:**
-- Casual chat, greetings, emoji-only messages
-- Credentials, tokens, personal information
-- Duplicate information already in the wiki
-
-## Layout
-
-- \`wiki/\` — AI-maintained wiki pages (Obsidian-compatible)
-- \`wiki-agent.md\` — Agent behavioral rules (optional, vault-specific)
-- \`sources/\` — Raw source documents, date-partitioned (immutable)
-- \`wiki-log.md\` — Append-only operation log
-- \`.llm-wiki/\` — Config and sync state
-
-## CLI
-
-- \`llm-wiki search <query>\` — BM25 (+ vector, if DB9 configured) keyword search
-- \`llm-wiki graph\` — communities, hubs, orphans, wanted pages
-- \`llm-wiki status\` — stats + health summary
-- \`llm-wiki sync\` — track mtime/SHA256, push embeddings to DB9 if configured
-
-## Rules
-
-1. Always read \`wiki-purpose.md\` and \`wiki-schema.md\` before any operation
-2. Never modify files in \`sources/\` — they are immutable raw inputs
-3. Use \`[[wikilinks]]\` for cross-references between wiki pages
-4. After every operation, append an entry to \`wiki-log.md\` **and** run \`llm-wiki sync\`
-5. When you receive information, apply your auto-ingest criteria — do not wait for explicit commands
-`;
 
 export const initCommand = new Command('init')
   .description('Initialize a new llm-wiki vault')
@@ -291,7 +193,7 @@ export const initCommand = new Command('init')
     console.log(`Initialized llm-wiki vault in ${targetDir}`);
     console.log('');
     console.log('Created:');
-    console.log('  wiki/pages/        — Wiki pages (Crystal layer)');
+    console.log('  wiki/pages/        — Wiki pages (Obsidian-compatible)');
     console.log('  wiki/');
     console.log('    wiki-purpose.md  — Purpose and scope');
     console.log('    wiki-schema.md   — Naming conventions');
