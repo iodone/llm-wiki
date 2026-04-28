@@ -3,8 +3,12 @@ name: llm-wiki
 version: 2.0.0
 description: |
   LLM Wiki vault 操作手册。
-  当用户要求执行 /ingest、/query、/lint、/research 时触发。
-  当用户说「把这篇文章加入 wiki」「搜索 wiki」「检查 wiki 健康度」时触发。
+
+  触发条件：
+  - /ingest <path> — 当用户说「ingest」「把这篇文章加入 wiki」「编译到 wiki」「摄取」时触发
+  - /query <question> — 当用户说「搜索 wiki」「wiki 中有没有」「查一下 wiki」时触发
+  - /lint — 当用户说「检查 wiki」「wiki 健康度」「lint」「有没有断链」时触发
+  - /research <topic> — 当用户说「研究一下」「深度调研」「research」时触发
 ---
 
 # LLM Wiki
