@@ -21,31 +21,21 @@ LLM Wiki is a **CLI tool + AI Agent skill system** that maintains an evolving, i
 If you've forked this repo and want to develop/customize it:
 
 ```bash
-# Clone your fork
-git clone https://github.com/iodone/llm-wiki.git
+git clone https://github.com/<your-username>/llm-wiki.git
 cd llm-wiki
-
-# Install dependencies and build
 npm install
 npm run build
+npm link                    # Creates global symlink
 
-# Create global symlink (makes llm-wiki available everywhere)
-npm link
-
-# Verify installation
-llm-wiki --version
+llm-wiki --version          # Verify installation
 ```
 
 **Benefits:**
 - ✅ `llm-wiki` command available globally
 - ✅ Changes take effect immediately after `npm run build`
 - ✅ Perfect for iterative development
-- ✅ No need to reinstall after modifications
 
-**To uninstall:**
-```bash
-npm unlink
-```
+**To uninstall:** `npm unlink`
 
 ---
 
@@ -59,42 +49,46 @@ llm-wiki init
 ```
 
 This creates:
-- `wiki/` directory with metadata files (wiki-purpose.md, wiki-schema.md, wiki-agent.md, wiki-log.md)
-- `wiki/pages/` for wiki content (Crystal layer)
-- `sources/` for raw input documents (immutable)
-- `.llm-wiki/config.toml` for configuration
 
-**Note:** `llm-wiki init` does NOT generate `AGENTS.md` or `CLAUDE.md` — those are project-level files, not wiki-level. The wiki vault is self-contained in `wiki/`.
+```
+my-wiki/
+├── wiki/                    # Self-contained wiki vault
+│   ├── pages/               # Wiki pages (Obsidian-compatible)
+│   ├── wiki-agent.md        # Agent behavior rules (single source of truth)
+│   ├── wiki-purpose.md      # Purpose and scope (user-defined)
+│   ├── wiki-schema.md       # Naming conventions (sensible defaults)
+│   └── wiki-log.md          # Append-only change log
+├── sources/                 # Raw input documents (immutable)
+└── .llm-wiki/
+    └── config.toml          # Vault configuration
+```
+
+**Key points:**
+- `llm-wiki init` does NOT generate `AGENTS.md` or `CLAUDE.md` — those are project-level files
+- `wiki/wiki-agent.md` is the **single source of truth** for agent behavior (no CLAUDE.md/AGENTS.md fallback)
+- `wiki/wiki-schema.md` ships with sensible defaults based on Karpathy's LLM Wiki pattern (page types, frontmatter, wikilinks, tags) — customize it for your domain
+- `wiki/wiki-purpose.md` must be user-defined (only you know what your wiki is about)
 
 ### 2. Install the skill for your AI agent
 
 ```bash
-# For Alma/Codex (default)
-llm-wiki skill install
-
-# For Claude Code only
-llm-wiki skill install --claude
-
-# For both
-llm-wiki skill install --claude --codex
+llm-wiki skill install              # Install to both .claude/ and .agents/
+llm-wiki skill install --claude     # Claude Code only
+llm-wiki skill install --codex      # Alma/Codex only
 ```
 
-This installs the llm-wiki skill to:
-- `.agents/skills/llm-wiki/SKILL.md` (Alma/Codex)
-- `.claude/skills/llm-wiki/SKILL.md` (Claude Code)
+This installs the llm-wiki skill to `.agents/skills/llm-wiki/SKILL.md` (or `.claude/skills/llm-wiki/SKILL.md`).
+
+The skill file contains the complete playbook for `/ingest`, `/query`, `/lint`, `/research` operations.
 
 ### 3. Use your AI agent
 
-Now use your AI agent (Alma, Claude Code, etc.) with the wiki:
-
 ```bash
-/ingest sources/some-article.md   # Compile raw docs into wiki pages
-/query "What do we know about X?" # Search and synthesize knowledge
-/lint                             # Health check: broken links, orphans, contradictions
-/research "deep dive on Y"        # Internet research → save to sources/ → ingest
+/ingest sources/some-article.md     # Compile raw docs into wiki pages
+/query "What do we know about X?"   # Search and synthesize knowledge
+/lint                               # Health check: broken links, orphans, contradictions
+/research "deep dive on Y"          # Internet research → save to sources/ → ingest
 ```
-
-The skill file (`.agents/skills/llm-wiki/SKILL.md`) contains the full playbook for these operations.
 
 ---
 
@@ -102,13 +96,14 @@ The skill file (`.agents/skills/llm-wiki/SKILL.md`) contains the full playbook f
 
 ```
 my-wiki/
-├── wiki/                          # Wiki vault (self-contained)
+├── wiki/                          # Self-contained wiki vault
 │   ├── pages/                     # Wiki pages (Crystal layer, LLM-maintained)
-│   ├── wiki-purpose.md            # Wiki scope and audience
-│   ├── wiki-schema.md             # Page naming conventions, frontmatter rules
-│   ├── wiki-agent.md              # Agent behavioral rules (customizable)
+│   ├── wiki-agent.md              # Agent behavior (identity, ingest criteria, rules)
+│   ├── wiki-purpose.md            # Wiki scope and audience (user-defined)
+│   ├── wiki-schema.md             # Page conventions (sensible defaults, customizable)
 │   └── wiki-log.md                # Append-only operation log
 ├── sources/                       # Raw, immutable source documents
+│   └── YYYY-MM-DD/                # Date-based storage (optional)
 ├── .llm-wiki/
 │   ├── config.toml                # Vault configuration
 │   └── sync-state.json            # Incremental sync tracking (auto-generated)
@@ -124,13 +119,15 @@ my-wiki/
 
 ### Key Design Decisions
 
-1. **Self-contained wiki vault**: All wiki metadata files (`wiki-*.md`) live inside `wiki/`, not at the project root. This keeps the vault modular and portable.
+1. **Self-contained wiki vault**: All wiki metadata files live inside `wiki/`. The vault can be opened directly in Obsidian.
 
-2. **No project-level files generated**: `llm-wiki init` does NOT create `AGENTS.md` or `CLAUDE.md`. Those are project protocol files, managed by the project, not the wiki tool.
+2. **`wiki-agent.md` is the single source of truth**: No separate `CLAUDE.md` or `AGENTS.md`. The skill reads `wiki-agent.md` for agent identity, ingest criteria (MUST/MAY/NEVER), and operating rules.
 
-3. **Skill directory structure**: Skills are installed to `<name>/SKILL.md` (e.g., `.agents/skills/llm-wiki/SKILL.md`), not flat files like `llm-wiki.md`. This aligns with Alma's standard skill structure.
+3. **`wiki-schema.md` ships with defaults**: Page types (Concept/Entity/Synthesis/Source), frontmatter spec, wikilink rules, tag taxonomy — all based on Karpathy's LLM Wiki pattern. Customize for your domain.
 
-4. **Configurable paths**: Use `.llm-wiki/config.toml` to customize:
+4. **Skill directory structure**: Skills installed to `<name>/SKILL.md` (e.g., `.agents/skills/llm-wiki/SKILL.md`). This aligns with Alma's standard skill structure.
+
+5. **Configurable paths**: Use `.llm-wiki/config.toml` to customize:
    ```toml
    [vault]
    name = "My Wiki"
@@ -161,11 +158,16 @@ pages_subdir = "pages"
 ### Customize Wiki Agent Behavior
 
 Edit `wiki/wiki-agent.md` to override default behavior:
-- Auto-ingest criteria (MUST capture, MAY capture, NEVER capture)
 - Agent identity (e.g., "I am Alma for Meta42" instead of generic wiki agent)
+- Auto-ingest criteria (MUST capture, MAY capture, NEVER capture)
 - Security gates (e.g., Owner-only write permission)
 
-See `wiki/wiki-agent.md` template after running `llm-wiki init`.
+### Customize Wiki Schema
+
+Edit `wiki/wiki-schema.md` to define your domain-specific conventions:
+- Page types and their frontmatter requirements
+- Naming conventions (kebab-case, subdirectories)
+- Tag taxonomy
 
 ---
 
@@ -173,13 +175,9 @@ See `wiki/wiki-agent.md` template after running `llm-wiki init`.
 
 ### `/ingest <path>`
 
-Compile raw source documents into structured wiki pages.
+Compile raw source documents into structured wiki pages. The agent reads `wiki-agent.md` for ingest criteria, creates/updates wiki pages with `[[wikilinks]]`, and logs the operation.
 
-**Four-stage loop:**
-1. **Map Relations**: Check `sources/` and `wiki/` for existing related content
-2. **Entropy Check**: Is this content worth capturing? Does it reduce contradictions?
-3. **Execute & Index**: Create/update wiki pages, update `wiki-log.md`, run `llm-wiki sync`
-4. **Verify & Feedback**: Run `/lint` to check for broken links, orphans, contradictions
+**Phase-based workflow:** Pre-check → Analyze & Plan → Execute → Finalize
 
 **Example:**
 ```bash
@@ -197,17 +195,11 @@ Semantic search across the wiki + synthesize an answer. If the query reveals new
 
 ### `/lint`
 
-Health check:
-- Broken wikilinks
-- Orphaned pages (no incoming links)
-- Contradicting information
-- Outdated content
-
-Auto-fixes safe issues, reports others for human decision.
+Health check: broken wikilinks, orphaned pages, contradictions, stale content. Auto-fixes safe issues, reports others for human decision.
 
 ### `/research <topic>`
 
-Agent conducts internet research, saves findings to `sources/`, then runs `/ingest`.
+Deep-dive investigation: web search → save to `sources/` → ingest → synthesize a research report.
 
 **Example:**
 ```bash
@@ -218,73 +210,16 @@ Agent conducts internet research, saves findings to `sources/`, then runs `/inge
 
 ## CLI Commands
 
-### `llm-wiki init [directory]`
-
-Initialize a new wiki vault.
-
-```bash
-llm-wiki init                # Initialize in current directory
-llm-wiki init my-wiki        # Initialize in my-wiki/
-```
-
-### `llm-wiki status`
-
-Show vault statistics:
-- Number of wiki pages
-- Number of source documents
-- Number of wikilinks
-- Last sync time
-- Health status
-
-### `llm-wiki search <query>`
-
-BM25 keyword search (+ vector search if DB9 configured).
-
-```bash
-llm-wiki search "distributed consensus"
-```
-
-### `llm-wiki graph`
-
-Analyze wiki topology:
-- Communities (clusters of related pages)
-- Hubs (highly connected pages)
-- Orphans (pages with no incoming links)
-- Wanted pages (linked but not yet created)
-
-### `llm-wiki sync`
-
-Update search index and metadata.
-
-**Automatically called after every `/ingest`, `/query`, `/lint` operation.** You rarely need to run this manually.
-
-```bash
-llm-wiki sync              # Incremental sync (fast)
-llm-wiki sync --full       # Full rebuild (slow, for troubleshooting)
-```
-
-### `llm-wiki skill install`
-
-Install/upgrade skill files to AI agent workspace.
-
-```bash
-llm-wiki skill install              # Install to both .claude/ and .agents/
-llm-wiki skill install --claude     # Install to .claude/skills/ only
-llm-wiki skill install --codex      # Install to .agents/skills/ only
-llm-wiki skill install --dir ~/work/my-project  # Custom workspace directory
-```
-
-### `llm-wiki skill list`
-
-List all available skills bundled with llm-wiki.
-
-### `llm-wiki skill show <name>`
-
-Print skill content to stdout.
-
-```bash
-llm-wiki skill show llm-wiki
-```
+| Command | Description |
+|:---|:---|
+| `llm-wiki init [dir]` | Initialize a new wiki vault |
+| `llm-wiki status` | Vault statistics and health summary |
+| `llm-wiki search <query>` | BM25 (+ vector if DB9 configured) keyword search |
+| `llm-wiki graph` | Wiki topology analysis (communities, hubs, orphans, wanted pages) |
+| `llm-wiki sync` | Update search index and metadata (auto-called after operations) |
+| `llm-wiki skill install` | Install/upgrade skill files to AI agent workspace |
+| `llm-wiki skill list` | List available skills |
+| `llm-wiki skill show <name>` | Print skill content to stdout |
 
 ---
 
@@ -298,7 +233,7 @@ The `system-weaver` project uses llm-wiki with this structure:
 system-weaver/
 ├── wiki/                          # Wiki vault (self-contained)
 │   ├── pages/                     # Crystal layer (structured knowledge)
-│   ├── wiki-agent.md              # Wiki-specific behavior (Identity: Alma for Meta42)
+│   ├── wiki-agent.md              # Agent behavior (single source of truth)
 │   ├── wiki-purpose.md
 │   ├── wiki-schema.md
 │   └── wiki-log.md
@@ -306,10 +241,10 @@ system-weaver/
 │   ├── log/                       # Trace layer (raw conversations)
 │   ├── clippings/                 # External materials
 │   └── research/                  # Unit layer (deep analysis)
-├── .llm-wiki/
-│   └── config.toml                # wiki_dir = "wiki", pages_subdir = "pages"
 ├── projects/                      # External project symlinks
 │   └── llm-wiki -> ...            # Symlink to llm-wiki project
+├── .llm-wiki/
+│   └── config.toml
 └── .agents/
     └── skills/
         └── llm-wiki/
@@ -321,11 +256,6 @@ system-weaver/
 - **Unit** (`sources/research/`) — Deep analysis, reusable insights
 - **Crystal** (`wiki/pages/`) — Structured knowledge graph, LLM-maintained
 
-**Four-stage reasoning loop:**
-1. Map Relations → 2. Entropy Check → 3. Execute & Index → 4. Verify & Feedback
-
-See `system-weaver/AGENTS.md` for the full workflow.
-
 ---
 
 ## Philosophy
@@ -334,15 +264,15 @@ See `system-weaver/AGENTS.md` for the full workflow.
 
 LLM Wiki follows the principle: **structure first, content later**.
 
-1. **Map Relations**: Before writing anything, understand the existing topology (what pages exist, how they're linked).
+1. **Map Relations**: Before writing anything, understand the existing topology.
 2. **Entropy Check**: Will this new content reduce contradictions and increase cross-validation?
-3. **Execute & Index**: Write the content AND update the index (wiki-log.md, wiki/index.md) atomically.
+3. **Execute & Index**: Write the content AND update the index atomically.
 4. **Verify & Feedback**: Run `/lint` to ensure the structure is still sound.
 
 ### Tool Generates, Protocols Reference
 
-- **llm-wiki** generates the wiki vault structure (wiki/, sources/, .llm-wiki/).
-- **Projects** (like system-weaver) reference the wiki via `wiki/wiki-agent.md` (single source of truth).
+- **llm-wiki** generates the wiki vault structure (`wiki/`, `sources/`, `.llm-wiki/`).
+- **Projects** define their own `wiki-agent.md` (identity, criteria, rules).
 - **Skills** are installed separately via `llm-wiki skill install`, not bundled with `init`.
 
 ### Low-Entropy Design
@@ -350,7 +280,7 @@ LLM Wiki follows the principle: **structure first, content later**.
 - Wiki vault is **self-contained** in `wiki/` (can be opened in Obsidian directly).
 - Source documents are **immutable** (append-only, never edited).
 - All edits happen in `wiki/pages/`, tracked in `wiki-log.md`.
-- Real-time topology consistency via index files (`wiki/index.md`, `sources/*/index.md`).
+- `wiki-agent.md` is the **single source of truth** for agent behavior (no external fallback).
 
 ---
 
@@ -369,7 +299,7 @@ Then `llm-wiki sync` will push embeddings to DB9 for semantic search.
 
 ### Custom Frontmatter
 
-Edit `wiki/wiki-schema.md` to define your frontmatter conventions:
+Edit `wiki/wiki-schema.md` to define your frontmatter conventions. The defaults:
 
 ```yaml
 ---
@@ -382,9 +312,9 @@ updated: 2024-12-05
 ---
 ```
 
-### Subdirectories in wiki/
+### Subdirectories in wiki/pages/
 
-You can organize wiki pages in subdirectories:
+Organize wiki pages in subdirectories when the wiki grows:
 
 ```
 wiki/pages/
@@ -397,47 +327,30 @@ wiki/pages/
 └── index.md
 ```
 
-Update `wiki/wiki-schema.md` to document your taxonomy.
-
 ---
 
 ## Troubleshooting
 
 ### `llm-wiki: command not found`
 
-If installed via npm globally but not in PATH:
-
 ```bash
-# Find where npm installs global packages
 npm config get prefix
-
-# Add to PATH (e.g., in ~/.zshrc or ~/.bashrc)
 export PATH="$(npm config get prefix)/bin:$PATH"
 ```
 
-If using direct execution:
-
+Or use direct execution:
 ```bash
 ln -s /path/to/llm-wiki/dist/cli.js /usr/local/bin/llm-wiki
 ```
 
 ### Skill file not loading
 
-Make sure the skill file exists:
-
 ```bash
 ls .agents/skills/llm-wiki/SKILL.md
-```
-
-If missing, reinstall:
-
-```bash
-llm-wiki skill install
+llm-wiki skill install    # Reinstall if missing
 ```
 
 ### Sync state issues
-
-If `llm-wiki sync` behaves strangely:
 
 ```bash
 rm .llm-wiki/sync-state.json
@@ -472,5 +385,5 @@ MIT
 ## Related Projects
 
 - [Obsidian](https://obsidian.md/) — Human interface for wiki vaults
-- [Alma](https://github.com/soul-codes/alma) — AI agent framework (Codex)
+- [Alma](https://github.com/soul-codes/alma) — AI agent framework
 - [Claude Code](https://www.anthropic.com/) — AI agent by Anthropic
