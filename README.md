@@ -16,12 +16,26 @@ LLM Wiki is a **CLI tool + AI Agent skill system** that maintains an evolving, i
 
 ## Installation
 
-### Development Install (Recommended for Forked Repos)
-
-If you've forked this repo and want to develop/customize it:
+### Install from Source (Recommended)
 
 ```bash
-git clone https://github.com/<your-username>/llm-wiki.git
+git clone https://github.com/iodone/llm-wiki.git
+cd llm-wiki
+npm install
+npm run build
+npm pack
+npm install -g ./iodone-llm-wiki-*.tgz
+
+llm-wiki --version          # Verify installation
+```
+
+**To uninstall:** `npm uninstall -g @iodone/llm-wiki`
+
+### Development Install (Symlink)
+
+If you're actively developing and want changes to take effect immediately:
+
+```bash
 cd llm-wiki
 npm install
 npm run build
@@ -30,10 +44,7 @@ npm link                    # Creates global symlink
 llm-wiki --version          # Verify installation
 ```
 
-**Benefits:**
-- ✅ `llm-wiki` command available globally
-- ✅ Changes take effect immediately after `npm run build`
-- ✅ Perfect for iterative development
+**Note:** `npm link` creates a symlink back to the source directory. This works for development but may cause issues in sandboxed environments. For production use, prefer the tarball install above.
 
 **To uninstall:** `npm unlink`
 
@@ -338,9 +349,10 @@ npm config get prefix
 export PATH="$(npm config get prefix)/bin:$PATH"
 ```
 
-Or use direct execution:
+Or reinstall globally:
 ```bash
-ln -s /path/to/llm-wiki/dist/cli.js /usr/local/bin/llm-wiki
+npm uninstall -g @iodone/llm-wiki
+cd /path/to/llm-wiki && npm pack && npm install -g ./iodone-llm-wiki-*.tgz
 ```
 
 ### Skill file not loading
