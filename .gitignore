@@ -2,3 +2,4 @@ node_modules/
 dist/
 .llm-wiki/
 *.log
+iodone-llm-wiki-*.tgz

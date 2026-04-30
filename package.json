@@ -1,5 +1,5 @@
 {
-  "name": "@jackwener/llm-wiki",
+  "name": "@iodone/llm-wiki",
   "version": "0.5.3",
   "description": "Agent-native LLM Wiki — AI-maintained knowledge base with Obsidian compatibility",
   "type": "module",
@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jackwener/llm-wiki.git"
+    "url": "git+https://github.com/iodone/llm-wiki.git"
   },
   "engines": {
     "node": ">=20"

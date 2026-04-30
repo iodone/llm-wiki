@@ -18,12 +18,15 @@ LLM Wiki is a **CLI tool + AI Agent skill system** that maintains an evolving, i
 
 ### Install from Source (Recommended)
 
+Package name: `@iodone/llm-wiki`
+
 ```bash
 git clone https://github.com/iodone/llm-wiki.git
 cd llm-wiki
 npm install
 npm run build
 npm pack
+npm uninstall -g @iodone/llm-wiki
 npm install -g ./iodone-llm-wiki-*.tgz
 
 llm-wiki --version          # Verify installation
